@@ -47,7 +47,7 @@ USAGE:
     gocar <COMMAND> [OPTIONS]
 
 COMMANDS:
-    new <name> [--mode simple|project]    Create a new Go project
+    new <name> [--mode simple|project]     Create a new Go project
     build [--release]                      Build the project
     run [args...]                          Run the project
     clean                                  Clean build artifacts
