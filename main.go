@@ -186,7 +186,7 @@ gocar run
 ## Output
 
 - Debug build: `+"`./bin/%s`"+`
-- Release build: `+"`./bin/%s`"+` (with release flags: -ldflags="-s -w" -trimpath)
+- Release build: `+"`./bin/%s`"+` (with release flags: CGO_ENABLED=0 -ldflags="-s -w" -trimpath)
 `, appName, appName, appName)
 
 	if err := writeFile(filepath.Join(appName, "README.md"), readme); err != nil {
