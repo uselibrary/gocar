@@ -85,6 +85,22 @@ func handleNew(args []string) {
 		os.Exit(1)
 	}
 
+	// Check for help
+	if args[0] == "help" || args[0] == "--help" || args[0] == "-h" {
+		fmt.Println("gocar new - Create a new Go project")
+		fmt.Println()
+		fmt.Println("USAGE:")
+		fmt.Println("    gocar new <name> [--mode simple|project]")
+		fmt.Println()
+		fmt.Println("OPTIONS:")
+		fmt.Println("    --mode <mode>    Project mode: 'simple' (default) or 'project'")
+		fmt.Println()
+		fmt.Println("EXAMPLES:")
+		fmt.Println("    gocar new myapp              Create a simple project")
+		fmt.Println("    gocar new myapp --mode project    Create a project-mode project")
+		os.Exit(0)
+	}
+
 	appName := args[0]
 
 	// Validate project name
@@ -97,13 +113,25 @@ func handleNew(args []string) {
 
 	// Parse --mode flag
 	for i := 1; i < len(args); i++ {
-		if args[i] == "--mode" && i+1 < len(args) {
-			mode = args[i+1]
-			if mode != "simple" && mode != "project" {
-				fmt.Printf("Error: Invalid mode '%s'. Use 'simple' or 'project'\n", mode)
+		switch args[i] {
+		case "--mode":
+			if i+1 < len(args) {
+				mode = args[i+1]
+				if mode != "simple" && mode != "project" {
+					fmt.Printf("Error: Invalid mode '%s'. Use 'simple' or 'project'\n", mode)
+					os.Exit(1)
+				}
+				i++ // skip next arg
+			} else {
+				fmt.Println("Error: --mode requires a value")
 				os.Exit(1)
 			}
-			break
+		default:
+			if strings.HasPrefix(args[i], "-") {
+				fmt.Printf("Error: Unknown option '%s'\n", args[i])
+				fmt.Println("Run 'gocar new --help' for usage.")
+				os.Exit(1)
+			}
 		}
 	}
 
@@ -411,11 +439,11 @@ OPTIONS:
     --help                 Show this help message
 
 EXAMPLES:
-    gocar build                              Build for current platform (debug)
-    gocar build --release                    Build for current platform (release)
-    gocar build --target linux/amd64         Cross-compile for Linux AMD64
-    gocar build --target windows/amd64       Cross-compile for Windows AMD64
-    gocar build --release --target linux/arm Cross-compile for Linux ARM (release)
+    gocar build                                  Build for current platform (debug)
+    gocar build --release                        Build for current platform (release)
+    gocar build --target linux/amd64             Cross-compile for Linux AMD64
+    gocar build --target windows/amd64           Cross-compile for Windows AMD64
+    gocar build --release --target linux/arm64   Cross-compile for Linux ARM (release)
 
 COMMON TARGETS:
     linux/amd64     Linux 64-bit
@@ -437,7 +465,7 @@ func handleBuild(args []string) {
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		switch arg {
-		case "--help", "-h":
+		case "help", "--help", "-h":
 			printBuildHelp()
 			os.Exit(0)
 		case "--release":
@@ -452,6 +480,10 @@ func handleBuild(args []string) {
 				fmt.Println("Example: gocar build --target linux/amd64")
 				os.Exit(1)
 			}
+		default:
+			fmt.Printf("Error: Unknown option '%s'\n", arg)
+			fmt.Println("Run 'gocar build --help' for usage.")
+			os.Exit(1)
 		}
 	}
 
@@ -477,12 +509,15 @@ func handleBuild(args []string) {
 		targetArch = parts[1]
 	}
 
-	// Determine output path
-	outputPath := filepath.Join("bin", appName)
-	if target != "" {
-		// For cross-compilation, add target suffix
-		outputPath = filepath.Join("bin", fmt.Sprintf("%s-%s-%s", appName, targetOS, targetArch))
+	// Determine output path following Cargo's structure
+	// bin/debug/<os>-<arch>/appname or bin/release/<os>-<arch>/appname
+	buildMode := "debug"
+	if release {
+		buildMode = "release"
 	}
+	targetDir := fmt.Sprintf("%s-%s", targetOS, targetArch)
+	outputDir := filepath.Join("bin", buildMode, targetDir)
+	outputPath := filepath.Join(outputDir, appName)
 	if targetOS == "windows" {
 		outputPath += ".exe"
 	}
@@ -520,10 +555,10 @@ func handleBuild(args []string) {
 		buildArgs = append(buildArgs, "./main.go")
 	}
 
-	// Ensure bin directory exists
-	binDir := filepath.Join(projectRoot, "bin")
-	if err := os.MkdirAll(binDir, 0755); err != nil {
-		fmt.Printf("Error creating bin directory: %v\n", err)
+	// Ensure output directory exists
+	fullOutputDir := filepath.Join(projectRoot, outputDir)
+	if err := os.MkdirAll(fullOutputDir, 0755); err != nil {
+		fmt.Printf("Error creating output directory: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -538,7 +573,7 @@ func handleBuild(args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Build successful: %s\n", filepath.Join(projectRoot, outputPath))
+	fmt.Printf("Build successful: %s\n", outputPath)
 }
 
 // ==================== RUN COMMAND ====================
@@ -712,6 +747,19 @@ func handleAdd(args []string) {
 		os.Exit(1)
 	}
 
+	// Check for help
+	if args[0] == "help" || args[0] == "--help" || args[0] == "-h" {
+		fmt.Println("gocar add - Add dependencies to the project")
+		fmt.Println()
+		fmt.Println("USAGE:")
+		fmt.Println("    gocar add <package>...")
+		fmt.Println()
+		fmt.Println("EXAMPLES:")
+		fmt.Println("    gocar add github.com/gin-gonic/gin")
+		fmt.Println("    gocar add github.com/gin-gonic/gin github.com/spf13/cobra")
+		os.Exit(0)
+	}
+
 	// Check if we're in a Go module
 	projectRoot, appName, _, err := detectProject()
 	if err != nil {
@@ -743,6 +791,19 @@ func handleAdd(args []string) {
 // ==================== UPDATE COMMAND ====================
 
 func handleUpdate(args []string) {
+	// Check for help
+	if len(args) > 0 && (args[0] == "help" || args[0] == "--help" || args[0] == "-h") {
+		fmt.Println("gocar update - Update dependencies")
+		fmt.Println()
+		fmt.Println("USAGE:")
+		fmt.Println("    gocar update [package]...")
+		fmt.Println()
+		fmt.Println("EXAMPLES:")
+		fmt.Println("    gocar update                           Update all dependencies")
+		fmt.Println("    gocar update github.com/gin-gonic/gin  Update specific package")
+		os.Exit(0)
+	}
+
 	// Check if we're in a Go module
 	projectRoot, appName, _, err := detectProject()
 	if err != nil {
