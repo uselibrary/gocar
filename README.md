@@ -276,9 +276,9 @@ func main() {
 - ✅ **自动 Git 初始化** - 创建项目时自动执行 `git init -b main` 并生成 `.gitignore`
 - ✅ **智能项目检测** - 自动识别 simple/project 模式
 - ✅ **项目名验证** - 确保项目名符合 Go 规范
-- ✅ **Release 优化** - 使用 `-ldflags="-s -w" -trimpath` 减小二进制体积
-- ✅ **跨平台支持** - Windows 自动添加 `.exe` 后缀
+- ✅ **Release 优化** - 使用 `CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath` 减小二进制体积
 - ✅ **清理命令** - 一键清理构建产物
+- ✅ **跨平台支持**
 
 ---
 

@@ -282,9 +282,9 @@ Directory notes:
 - ✅ Automatic Git initialization (`git init -b main`) and `.gitignore` generation
 - ✅ Smart project mode detection (simple vs project)
 - ✅ Project name validation following Go conventions
-- ✅ Release optimizations using `-ldflags="-s -w" -trimpath`
-- ✅ Cross-platform support (adds `.exe` suffix on Windows)
+- ✅ Release optimizations using `CGO_ENABLED=0 go build -ldflags="-s -w" -trimpath`
 - ✅ Clean command to remove build artifacts
+- ✅ Cross-platform support
 
 ## .gitignore Template
 
