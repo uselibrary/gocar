@@ -472,6 +472,7 @@ USAGE:
 OPTIONS:
     --release              Build in release mode (optimized binary)
     --target <os>/<arch>   Cross-compile for target platform
+    --with-cgo             Force enable CGO (sets CGO_ENABLED=1)
     --help                 Show this help message
 
 EXAMPLES:
@@ -480,6 +481,8 @@ EXAMPLES:
     gocar build --target linux/amd64             Cross-compile for Linux AMD64
     gocar build --target windows/amd64           Cross-compile for Windows AMD64
     gocar build --release --target linux/arm64   Cross-compile for Linux ARM (release)
+    gocar build --with-cgo                       Build with CGO enabled
+    gocar build --release --with-cgo             Build in release mode with CGO enabled
 
 COMMON TARGETS:
     linux/amd64     Linux AMD 64-bit
@@ -496,6 +499,7 @@ COMMON TARGETS:
 func handleBuild(args []string) {
 	release := false
 	target := ""
+	withCgo := false
 
 	// Parse arguments
 	for i := 0; i < len(args); i++ {
@@ -506,6 +510,8 @@ func handleBuild(args []string) {
 			os.Exit(0)
 		case "--release":
 			release = true
+		case "--with-cgo":
+			withCgo = true
 		case "--target":
 			if i+1 < len(args) {
 				target = args[i+1]
@@ -567,20 +573,35 @@ func handleBuild(args []string) {
 		env = append(env, fmt.Sprintf("GOARCH=%s", targetArch))
 	}
 
+	// Set CGO_ENABLED based on flags
+	if withCgo {
+		env = append(env, "CGO_ENABLED=1")
+	} else if release {
+		// Only disable CGO in release mode if --with-cgo is not specified
+		env = append(env, "CGO_ENABLED=0")
+	}
+
 	if release {
 		if target != "" {
-			fmt.Printf("Building in release mode for %s/%s...\n", targetOS, targetArch)
+			fmt.Printf("Building in release mode for %s/%s", targetOS, targetArch)
 		} else {
-			fmt.Println("Building in release mode...")
+			fmt.Print("Building in release mode")
 		}
-		env = append(env, "CGO_ENABLED=0")
+		if withCgo {
+			fmt.Print(" with CGO enabled")
+		}
+		fmt.Println("...")
 		buildArgs = []string{"build", "-ldflags=-s -w", "-trimpath", "-o", outputPath}
 	} else {
 		if target != "" {
-			fmt.Printf("Building in debug mode for %s/%s...\n", targetOS, targetArch)
+			fmt.Printf("Building in debug mode for %s/%s", targetOS, targetArch)
 		} else {
-			fmt.Println("Building in debug mode...")
+			fmt.Print("Building in debug mode")
 		}
+		if withCgo {
+			fmt.Print(" with CGO enabled")
+		}
+		fmt.Println("...")
 		buildArgs = []string{"build", "-o", outputPath}
 	}
 
