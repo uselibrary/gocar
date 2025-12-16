@@ -210,11 +210,14 @@ A Go project created with gocar.
 ## Build
 
 `+"```bash"+`
-# Debug build
+# Debug build (current platform)
 gocar build
 
-# Release build
+# Release build (current platform)
 gocar build --release
+
+# Cross-compile for Linux on AMD64
+gocar build --target linux/amd64
 `+"```"+`
 
 ## Run
@@ -223,11 +226,26 @@ gocar build --release
 gocar run
 `+"```"+`
 
-## Output
+## Output Structure
 
-- Debug build: `+"`./bin/%s`"+`
-- Release build: `+"`./bin/%s`"+` (with release flags: CGO_ENABLED=0 -ldflags="-s -w" -trimpath)
-`, appName, appName, appName)
+`+"```"+`
+bin/
+├── debug/
+│   └── <os>-<arch>/
+│       └── %s
+└── release/
+    └── <os>-<arch>/
+        └── %s
+`+"```"+`
+
+Build artifacts are organized by:
+- **Build mode**: debug or release
+- **Target platform**: OS and architecture (e.g., linux-amd64, darwin-arm64)
+
+Examples:
+- Debug build for current platform: `+"`./bin/debug/linux-amd64/%s`"+`
+- Release build for Windows: `+"`./bin/release/windows-amd64/%s.exe`"+`
+`, appName, appName, appName, appName, appName)
 
 	if err := writeFile(filepath.Join(appName, "README.md"), readme); err != nil {
 		return err
@@ -344,11 +362,14 @@ A Go project created with gocar (project mode).
 ## Build
 
 `+"```bash"+`
-# Debug build
+# Debug build (current platform)
 gocar build
 
-# Release build
+# Release build (current platform)
 gocar build --release
+
+# Cross-compile for Linux
+gocar build --target linux/amd64
 `+"```"+`
 
 ## Run
@@ -357,10 +378,25 @@ gocar build --release
 gocar run
 `+"```"+`
 
-## Output
+## Output Structure
 
-- Debug build: `+"`./bin/%s`"+`
-- Release build: `+"`./bin/%s`"+` (with release flags: CGO_ENABLED=0 -ldflags="-s -w" -trimpath)
+`+"```"+`
+bin/
+├── debug/
+│   └── <os>-<arch>/
+│       └── %s
+└── release/
+    └── <os>-<arch>/
+        └── %s
+`+"```"+`
+
+Build artifacts are organized by:
+- **Build mode**: debug or release
+- **Target platform**: OS and architecture (e.g., linux-amd64, darwin-arm64)
+
+Examples:
+- Debug build for current platform: `+"`./bin/debug/linux-amd64/%s`"+`
+- Release build for Windows: `+"`./bin/release/windows-amd64/%s.exe`"+`
 
 ## Directories
 
@@ -368,7 +404,7 @@ gocar run
 - **internal/**: Private application and library code (not importable by other projects)
 - **pkg/**: Library code that can be used by external applications
 - **test/**: Integration tests, black-box tests
-`, appName, appName, appName, appName)
+`, appName, appName, appName, appName, appName, appName)
 
 	if err := writeFile(filepath.Join(appName, "README.md"), readme); err != nil {
 		return err
@@ -446,7 +482,7 @@ EXAMPLES:
     gocar build --release --target linux/arm64   Cross-compile for Linux ARM (release)
 
 COMMON TARGETS:
-    linux/amd64     Linux 64-bit
+    linux/amd64     Linux AMD 64-bit
     linux/arm64     Linux ARM 64-bit
     linux/arm       Linux ARM 32-bit
     darwin/amd64    macOS Intel
@@ -589,9 +625,9 @@ func handleRun(args []string) {
 	// Determine source path based on project mode
 	var sourcePath string
 	if projectMode == "project" {
-		sourcePath = "./cmd/server/main.go"
+		sourcePath = "./cmd/server"
 	} else {
-		sourcePath = "./main.go"
+		sourcePath = "."
 	}
 
 	fmt.Printf("Running %s...\n\n", appName)
@@ -704,13 +740,16 @@ func detectProject() (projectRoot, appName, projectMode string, err error) {
 	// Get app name from directory name
 	appName = filepath.Base(projectRoot)
 
-	// Detect project mode
-	if _, err := os.Stat(filepath.Join(projectRoot, "cmd", "server", "main.go")); err == nil {
+	// Detect project mode: prioritize checking directory structure
+	// Check for project mode first (cmd/server directory exists)
+	cmdServerDir := filepath.Join(projectRoot, "cmd", "server")
+	if stat, err := os.Stat(cmdServerDir); err == nil && stat.IsDir() {
 		projectMode = "project"
 	} else if _, err := os.Stat(filepath.Join(projectRoot, "main.go")); err == nil {
+		// Simple mode: main.go in root
 		projectMode = "simple"
 	} else {
-		return "", "", "", fmt.Errorf("cannot detect project mode: no main.go or cmd/server/main.go found")
+		return "", "", "", fmt.Errorf("cannot detect project mode: no main.go found and cmd/server directory doesn't exist")
 	}
 
 	return projectRoot, appName, projectMode, nil
