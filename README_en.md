@@ -2,9 +2,9 @@
 
 > A “Rust Cargo–like” scaffolding and CLI tool for Go projects, providing a clean experience for project initialization and building.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT.svg)](https://opensource.org/licenses/MIT)
- [![Go](https://img.shields.io/badge/go-1.25+-blue.svg)](https://golang.org)
- [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey.svg)](https://github.com/uselibrary/gocar)
+[![License: MIT](https://img.shields.io/badge/License-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
+[![Go](https://img.shields.io/badge/go-1.25+-yellow.svg)](https://golang.org)
+[![Platform](https://img.shields.io/badge/platform-Linux%20|%20macOS%20|%20Windows-blue.svg)](https://github.com/uselibrary/gocar)
 
 **[简体中文](README.md)** | **[English](README_en.md)**
 
