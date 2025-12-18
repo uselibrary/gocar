@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"gocar/internal/build"
+	"gocar/internal/config"
 	"gocar/internal/project"
 )
 
@@ -13,7 +14,7 @@ type BuildCommand struct{}
 
 // Run 执行 build 命令
 func (c *BuildCommand) Run(args []string) error {
-	config := build.NewConfig()
+	buildConfig := build.NewConfig()
 	target := ""
 
 	// Parse arguments
@@ -24,9 +25,9 @@ func (c *BuildCommand) Run(args []string) error {
 			fmt.Print(c.Help())
 			return nil
 		case "--release":
-			config.Release = true
+			buildConfig.Release = true
 		case "--with-cgo":
-			config.WithCGO = true
+			buildConfig.WithCGO = true
 		case "--target":
 			if i+1 < len(args) {
 				target = args[i+1]
@@ -51,6 +52,19 @@ func (c *BuildCommand) Run(args []string) error {
 		os.Exit(1)
 	}
 
+	// Load config
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		fmt.Printf("Warning: %v\n", err)
+		cfg = config.DefaultConfig()
+	}
+
+	// Apply config overrides
+	if cfg.Project.Mode != "" {
+		projectMode = cfg.Project.Mode
+	}
+	appName = cfg.GetProjectName(appName)
+
 	// Parse target if specified
 	if target != "" {
 		targetOS, targetArch, err := build.ParseTarget(target)
@@ -60,11 +74,11 @@ func (c *BuildCommand) Run(args []string) error {
 			fmt.Println("Example: linux/amd64, windows/amd64, darwin/arm64")
 			os.Exit(1)
 		}
-		config.SetTarget(targetOS, targetArch)
+		buildConfig.SetTarget(targetOS, targetArch)
 	}
 
 	// Create builder
-	builder := build.NewBuilder(projectRoot, appName, projectMode, config)
+	builder := build.NewBuilder(projectRoot, appName, projectMode, buildConfig, cfg)
 
 	// Print build info
 	builder.PrintBuildInfo()

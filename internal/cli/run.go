@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 
+	"gocar/internal/config"
 	"gocar/internal/project"
 )
 
@@ -20,17 +22,35 @@ func (c *RunCommand) Run(args []string) error {
 		os.Exit(1)
 	}
 
-	// Determine source path based on project mode
-	var sourcePath string
-	if projectMode == "project" {
-		sourcePath = "./cmd/server"
-	} else {
-		sourcePath = "."
+	// Load config
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		fmt.Printf("Warning: %v\n", err)
+		cfg = config.DefaultConfig()
+	}
+
+	// Apply config overrides
+	if cfg.Project.Mode != "" {
+		projectMode = cfg.Project.Mode
+	}
+	appName = cfg.GetProjectName(appName)
+
+	// Get entry from config
+	sourcePath := cfg.GetRunEntry(projectMode)
+	if sourcePath != "." && !filepath.IsAbs(sourcePath) && len(sourcePath) > 0 && sourcePath[0] != '.' {
+		sourcePath = "./" + sourcePath
 	}
 
 	fmt.Printf("Running %s...\n\n", appName)
 
 	runArgs := []string{"run", sourcePath}
+
+	// Add default args from config
+	if len(cfg.Run.Args) > 0 {
+		runArgs = append(runArgs, cfg.Run.Args...)
+	}
+
+	// Add command line args
 	runArgs = append(runArgs, args...)
 
 	cmd := exec.Command("go", runArgs...)

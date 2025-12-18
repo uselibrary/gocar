@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"gocar/internal/config"
 	"gocar/internal/util"
 )
 
@@ -82,6 +83,11 @@ func (c *Creator) createSimpleProject() error {
 		return err
 	}
 
+	// Create .gocar.toml
+	if err := config.Save(c.Name, c.Name, "simple"); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -132,6 +138,11 @@ func (c *Creator) createProjectMode() error {
 
 	// Create .gitignore
 	if err := util.WriteFile(filepath.Join(c.Name, ".gitignore"), GitignoreTemplate(c.Name)); err != nil {
+		return err
+	}
+
+	// Create .gocar.toml
+	if err := config.Save(c.Name, c.Name, "project"); err != nil {
 		return err
 	}
 
