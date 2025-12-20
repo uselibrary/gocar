@@ -1,0 +1,80 @@
+# gocar 项目配置文件
+# 文档: https://github.com/uselibrary/gocar
+
+# 项目配置
+[project]
+# 项目模式: "simple" (单文件) 或 "project" (标准目录结构)
+# 留空则自动检测
+mode = "project"
+
+# 项目名称，留空则使用目录名
+name = "gocar"
+
+# 项目版本号
+version = "0.2.0"
+
+# 构建配置
+[build]
+# 构建入口路径 (相对于项目根目录)
+# simple 模式默认为 ".", project 模式默认为 "cmd/server"
+entry = "cmd/server"
+
+# 输出目录
+output = "bin"
+
+# 额外的 ldflags，会追加到 profile 的 ldflags 之后
+# 例如: "-X main.version=1.0.0"
+# ldflags = ""
+
+# 构建标签
+# tags = ["jsoniter", "sonic"]
+
+# 额外的环境变量
+# extra_env = ["GOPROXY=https://goproxy.cn"]
+
+# 运行配置
+[run]
+# 运行入口路径，留空则使用 build.entry
+entry = ""
+
+# 默认运行参数
+# args = ["-config", "config.yaml"]
+
+# Debug 构建配置
+# 使用: gocar build (默认)
+[profile.debug]
+# ldflags = ""              # Debug 默认无 ldflags
+# gcflags = "all=-N -l"     # 禁用优化，方便调试
+# trimpath = false          # 保留路径信息
+# cgo_enabled = true        # 跟随系统默认
+# race = false              # 竞态检测 (会显著降低性能)
+
+# Release 构建配置
+# 使用: gocar build --release
+[profile.release]
+ldflags = "-s -w"           # 裁剪符号表和调试信息
+# gcflags = ""              # 编译器参数
+trimpath = true             # 移除编译路径信息
+cgo_enabled = false         # 禁用 CGO 以生成静态二进制
+# race = false              # 竞态检测
+
+# 自定义命令
+# 格式: 命令名 = "要执行的 shell 命令"
+# 使用: gocar <命令名>
+# 命令会在项目根目录下执行
+[commands]
+# 代码检查
+vet = "go vet ./..."
+
+# 代码格式化
+fmt = "go fmt ./..."
+
+# 运行测试
+test = "go test -v ./..."
+
+# lint = "golangci-lint run"
+# doc = "godoc -http=:6060"
+# proto = "protoc --go_out=. --go-grpc_out=. ./proto/*.proto"
+
+# 自定义测试命令
+hello = "echo 'Hello from gocar custom command!'"

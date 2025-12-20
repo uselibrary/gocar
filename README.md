@@ -244,32 +244,54 @@ gocar init
 
 # 项目配置
 [project]
-mode = "project"    # 项目模式: "simple" 或 "project"
-name = "myapp"      # 项目名称，留空则使用目录名
-version = "1.0.0"   # 项目版本号，构建时自动通过 -X main.version=<version> 注入
+# 项目模式: "simple" (单文件) 或 "project" (标准目录结构)
+# 留空则自动检测
+mode = ""
+
+# 项目名称，留空则使用目录名
+name = ""
+
+# 项目版本号
+# version = "1.0.0"
 
 # 构建配置
 [build]
-entry = "cmd/server"                  # 构建入口路径（可修改为 cmd/myapp 等）
-output = "bin"                        # 输出目录
-ldflags = "-X main.version=1.0.0"     # 额外的 ldflags
-# tags = ["jsoniter", "sonic"]        # 构建标签
-# extra_env = ["GOPROXY=https://goproxy.cn"]  # 额外环境变量
+# 构建入口路径 (相对于项目根目录)
+# simple 模式默认为 ".", project 模式默认为 "cmd/server"
+entry = "."
+
+# 输出目录
+output = "bin"
+
+# 额外的 ldflags，会追加到 profile 的 ldflags 之后
+# 例如: "-X main.version=1.0.0"
+ldflags = ""
+
+# 构建标签
+# tags = ["jsoniter", "sonic"]
+
+# 额外的环境变量
+# extra_env = ["GOPROXY=https://goproxy.cn"]
 
 # 运行配置
 [run]
-entry = ""                            # 运行入口，留空则使用 build.entry
-# args = ["-config", "config.yaml"]   # 默认运行参数
+# 运行入口路径，留空则使用 build.entry
+entry = ""
 
-# Debug 构建配置 (gocar build)
+# 默认运行参数
+# args = ["-config", "config.yaml"]
+
+# Debug 构建配置
+# 使用: gocar build (默认)
 [profile.debug]
 # ldflags = ""              # Debug 默认无 ldflags
 # gcflags = "all=-N -l"     # 禁用优化，方便调试
 # trimpath = false          # 保留路径信息
 # cgo_enabled = true        # 跟随系统默认
-# race = false              # 竞态检测
+# race = false              # 竞态检测 (会显著降低性能)
 
-# Release 构建配置 (gocar build --release)
+# Release 构建配置
+# 使用: gocar build --release
 [profile.release]
 ldflags = "-s -w"           # 裁剪符号表和调试信息
 # gcflags = ""              # 编译器参数
@@ -278,11 +300,22 @@ cgo_enabled = false         # 禁用 CGO 以生成静态二进制
 # race = false              # 竞态检测
 
 # 自定义命令
+# 格式: 命令名 = "要执行的 shell 命令"
+# 使用: gocar <命令名>
+# 命令会在项目根目录下执行
 [commands]
+# 代码检查
 vet = "go vet ./..."
+
+# 代码格式化
 fmt = "go fmt ./..."
+
+# 运行测试
 test = "go test -v ./..."
+
 # lint = "golangci-lint run"
+# doc = "godoc -http=:6060"
+# proto = "protoc --go_out=. --go-grpc_out=. ./proto/*.proto"
 ```
 
 **配置项说明：**

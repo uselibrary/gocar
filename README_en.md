@@ -250,47 +250,80 @@ gocar init
 ```toml
 # gocar project configuration file
 
-# Project configuration
+# project configuration
+
 [project]
-mode = "project"    # Project mode: "simple" or "project"
-name = "myapp"      # Project name, uses directory name if empty
-version = "1.0.0"   # Project version, auto-injected via -X main.version=<version>
+# Project mode: "simple" (single file) or "project" (standard directory structure)
+# Auto-detected if empty
+mode = ""
+
+# Project name, uses directory name if empty
+name = ""
+
+# Project version
+# version = "1.0.0"
 
 # Build configuration
 [build]
-entry = "cmd/server"                  # Build entry path (can be changed to cmd/myapp, etc.)
-output = "bin"                        # Output directory
-ldflags = "-X main.version=1.0.0"     # Additional ldflags
-# tags = ["jsoniter", "sonic"]        # Build tags
-# extra_env = ["GOPROXY=https://goproxy.cn"]  # Additional environment variables
+# Build entry path (relative to project root)
+# simple mode defaults to ".", project mode defaults to "cmd/server"
+entry = "."
+
+# Output directory
+output = "bin"
+
+# Additional ldflags, appended to profile ldflags
+# For example: "-X main.version=1.0.0"
+ldflags = ""
+
+# Build tags
+# tags = ["jsoniter", "sonic"]
+
+# Additional environment variables
+# extra_env = ["GOPROXY=https://goproxy.cn"]
 
 # Run configuration
 [run]
-entry = ""                            # Run entry, uses build.entry if empty
-# args = ["-config", "config.yaml"]   # Default run arguments
+# Run entry path, uses build.entry if empty
+entry = ""
 
-# Debug build configuration (gocar build)
+# Default run arguments
+# args = ["-config", "config.yaml"]
+
+# Debug build configuration
+# Usage: gocar build (default)
 [profile.debug]
 # ldflags = ""              # Debug has no ldflags by default
-# gcflags = "all=-N -l"     # Disable optimization for debugging
-# trimpath = false          # Keep path information
+# gcflags = "all=-N -l"     # Disable optimizations for easier debugging
+# trimpath = false          # Retain path information
 # cgo_enabled = true        # Follow system default
-# race = false              # Race detection
-
-# Release build configuration (gocar build --release)
+# race = false              # Race detection (may significantly reduce performance)
+# Release build configuration
+# Usage: gocar build --release
 [profile.release]
-ldflags = "-s -w"           # Strip symbol table and debug info
+ldflags = "-s -w"           # Strip symbol table and debug information
 # gcflags = ""              # Compiler flags
-trimpath = true             # Remove build path information
-cgo_enabled = false         # Disable CGO for static binary
+trimpath = true             # Remove path information
+cgo_enabled = false         # Disable CGO to generate static binary
 # race = false              # Race detection
 
 # Custom commands
+# Format: command_name = "shell command to execute"
+# Usage: gocar <command_name>
+# Commands are executed in the project root directory
 [commands]
+# Code checking
 vet = "go vet ./..."
+
+# Code formatting
 fmt = "go fmt ./..."
+
+# Run tests
 test = "go test -v ./..."
+
 # lint = "golangci-lint run"
+# doc = "godoc -http=:6060"
+# proto = "protoc --go_out=. --go-grpc_out=. ./proto/*.proto"
 ```
 
 **Configuration options:**
