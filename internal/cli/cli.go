@@ -37,7 +37,6 @@ func NewApp() *App {
 	app.commands["update"] = &UpdateCommand{}
 	app.commands["tidy"] = &TidyCommand{}
 	app.commands["init"] = &InitCommand{}
-	app.commands["config"] = &ConfigCommand{}
 
 	return app
 }
@@ -113,9 +112,8 @@ USAGE:
     gocar <COMMAND> [OPTIONS]
 
 COMMANDS:
-    new <name> [--mode simple|project|<template>]  Create a new Go project
+    new <name> [--mode simple|project]     Create a new Go project
     init                                   Initialize .gocar.toml in current project
-    config <subcommand>                    Manage global gocar configuration
     build [--release]                      Build the project
     run [args...]                          Run the project
     clean                                  Clean build artifacts
@@ -125,11 +123,6 @@ COMMANDS:
     help                                   Print this help message
     version                                Print version info
 
-CONFIG SUBCOMMANDS:
-    config init                            Create global config (~/.gocar/config.toml)
-    config list                            List available project templates
-    config path                            Show config file location
-
 CUSTOM COMMANDS:
     Define custom commands in .gocar.toml [commands] section
     Example: gocar vet, gocar fmt, gocar test
@@ -137,8 +130,6 @@ CUSTOM COMMANDS:
 EXAMPLES:
     gocar new myapp                        Create a simple project
     gocar new myapp --mode project         Create a project-mode project
-    gocar new myapi --mode api             Create from 'api' template
-    gocar config init                      Create global config with templates
     gocar init                             Create .gocar.toml config file
     gocar build                            Build in debug mode
     gocar build --release                  Build in release mode
