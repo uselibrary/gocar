@@ -381,6 +381,33 @@ proto = "protoc --go_out=. --go-grpc_out=. ./proto/*.proto"
 dev = "air"  # Hot reload
 ```
 
+#### Overriding Built-in Commands
+
+Custom commands can override most built-in commands, giving you full control over your project's build and run workflow:
+
+| Command Type | Commands | Can Override |
+|--------------|----------|-------------|
+| Protected | `new`, `init` | ❌ No |
+| Project | `build`, `run`, `clean`, `add`, `update`, `tidy` | ✅ Yes |
+
+> **Protected commands** (`new`, `init`) cannot be overridden because `new` runs before project creation (no config file exists yet), and `init` generates the config file itself.
+
+Example: Override built-in `build` and `clean` commands
+
+```toml
+[commands]
+# Use Makefile for building
+build = "make build"
+
+# Custom clean logic
+clean = "make clean && rm -rf dist/"
+
+# Use docker-compose to run
+run = "docker-compose up"
+```
+
+When running `gocar build`, if a `build` command is defined in the config file, the custom command will be executed instead of the built-in build logic.
+
 ------
 
 The `main.go` template content for a new project is:

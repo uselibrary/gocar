@@ -175,6 +175,9 @@ cgo_enabled = false         # 禁用 CGO 以生成静态二进制
 # 格式: 命令名 = "要执行的 shell 命令"
 # 使用: gocar <命令名>
 # 命令会在项目根目录下执行
+#
+# 自定义命令可以覆盖以下内置命令: build, run, clean, add, update, tidy
+# 保护命令 (new, init) 不可被覆盖
 [commands]
 # 代码检查
 vet = "go vet ./..."
@@ -188,6 +191,11 @@ test = "go test -v ./..."
 # lint = "golangci-lint run"
 # doc = "godoc -http=:6060"
 # proto = "protoc --go_out=. --go-grpc_out=. ./proto/*.proto"
+
+# 覆盖内置命令示例 (取消注释以启用):
+# build = "make build"
+# run = "docker-compose up"
+# clean = "make clean && rm -rf dist/"
 `, projectMode, projectName, entry)
 }
 

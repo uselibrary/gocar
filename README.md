@@ -373,6 +373,33 @@ proto = "protoc --go_out=. --go-grpc_out=. ./proto/*.proto"
 dev = "air"  # 热重载
 ```
 
+#### 覆盖内置命令
+
+自定义命令可以覆盖大部分内置命令，让您完全控制项目的构建和运行流程：
+
+| 命令类型 | 命令 | 可被覆盖 |
+|---------|------|----------|
+| 保护命令 | `new`, `init` | ❌ 不可覆盖 |
+| 项目命令 | `build`, `run`, `clean`, `add`, `update`, `tidy` | ✅ 可覆盖 |
+
+> **保护命令**（`new`、`init`）不能被覆盖，因为 `new` 在项目创建前执行（此时还没有配置文件），`init` 用于生成配置文件本身。
+
+示例：覆盖内置的 `build` 和 `clean` 命令
+
+```toml
+[commands]
+# 使用 Makefile 构建
+build = "make build"
+
+# 自定义清理逻辑
+clean = "make clean && rm -rf dist/"
+
+# 使用 docker-compose 运行
+run = "docker-compose up"
+```
+
+当执行 `gocar build` 时，如果配置文件中定义了 `build` 命令，将优先执行自定义命令而非内置构建逻辑。
+
 ---
 
 新建项目的 `main.go` 模板内容如下：

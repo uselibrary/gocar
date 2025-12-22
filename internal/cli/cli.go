@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -10,6 +11,17 @@ import (
 
 // Version 版本号
 var Version = "0.2.0"
+
+// ErrCommandNotFound 命令未找到错误
+var ErrCommandNotFound = errors.New("command not found")
+
+// protectedCommands 保护命令列表，这些命令不能被自定义命令覆盖
+// new: 创建项目时还没有配置文件
+// init: 生成配置文件本身，不能被覆盖
+var protectedCommands = map[string]bool{
+	"new":  true,
+	"init": true,
+}
 
 // App CLI 应用
 type App struct {
@@ -39,6 +51,11 @@ func NewApp() *App {
 	app.commands["init"] = &InitCommand{}
 
 	return app
+}
+
+// isProtectedCommand 检查命令是否为保护命令
+func isProtectedCommand(cmdName string) bool {
+	return protectedCommands[cmdName]
 }
 
 // Run 运行应用
@@ -72,26 +89,40 @@ func (a *App) Run(args []string) error {
 		return fmt.Errorf("unknown command: %s", cmdName)
 	}
 
+	// 对于非保护命令，检查是否有同名的自定义命令覆盖
+	if !isProtectedCommand(cmdName) {
+		err := a.tryRunCustomCommand(cmdName, args[2:])
+		if err == nil {
+			return nil
+		}
+		// 只有当命令不存在时才回退到内置命令
+		// 如果命令存在但执行失败，则直接返回错误
+		if !errors.Is(err, ErrCommandNotFound) {
+			return err
+		}
+	}
+
 	return cmd.Run(args[2:])
 }
 
 // tryRunCustomCommand 尝试执行自定义命令
+// 返回 ErrCommandNotFound 表示命令不存在，其他错误表示命令执行失败
 func (a *App) tryRunCustomCommand(cmdName string, args []string) error {
 	// 检测项目
 	projectRoot, _, _, err := project.DetectProject()
 	if err != nil {
-		return err
+		return ErrCommandNotFound
 	}
 
 	// 加载配置
 	cfg, err := config.Load(projectRoot)
 	if err != nil {
-		return err
+		return ErrCommandNotFound
 	}
 
 	// 检查是否有这个自定义命令
 	if _, ok := cfg.GetCommand(cmdName); !ok {
-		return fmt.Errorf("command not found")
+		return ErrCommandNotFound
 	}
 
 	// 执行自定义命令
@@ -124,7 +155,8 @@ COMMANDS:
     version                                Print version info
 
 CUSTOM COMMANDS:
-    Define custom commands in .gocar.toml [commands] section
+    Define custom commands in .gocar.toml [commands] section.
+    Custom commands can override built-in commands (except: new, init).
     Example: gocar vet, gocar fmt, gocar test
 
 EXAMPLES:
