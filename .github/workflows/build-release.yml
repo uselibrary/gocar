@@ -40,7 +40,7 @@ jobs:
           OUT=release/${GOOS}-${GOARCH}/$BIN_NAME
           echo "Building $OUT"
           env CGO_ENABLED=0 GOOS=$GOOS GOARCH=$GOARCH \
-            go build -trimpath -ldflags="-s -w" -o "$OUT" .
+            go build -trimpath -ldflags="-s -w" -o "$OUT" ./cmd/server
           if [ "$GOOS" != "windows" ]; then chmod +x "$OUT"; fi
           pushd release/${GOOS}-${GOARCH}
           ZIPNAME=gocar-${GOOS}-${GOARCH}-v${{ github.event.inputs.version }}.zip
