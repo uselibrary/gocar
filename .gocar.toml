@@ -73,6 +73,7 @@ fmt = "go fmt ./..."
 test = "go test -v ./..."
 
 # lint = "golangci-lint run"
+clippy = "/home/imes/go/bin/golangci-lint run"
 # doc = "godoc -http=:6060"
 # proto = "protoc --go_out=. --go-grpc_out=. ./proto/*.proto"
 
