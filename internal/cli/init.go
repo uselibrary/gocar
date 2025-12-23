@@ -63,7 +63,7 @@ DESCRIPTION:
     Creates a .gocar.toml configuration file in the current project root.
     The config file allows you to:
     
-    - Override the default build entry path (e.g., cmd/myapp instead of cmd/server)
+    - Override the default build entry path (e.g., cmd/myapp instead of cmd/<appName> — the project name)
     - Define custom commands (e.g., gocar vet, gocar lint)
     - Set default build tags, ldflags, and environment variables
     - Configure default run arguments

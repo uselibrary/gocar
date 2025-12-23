@@ -44,7 +44,7 @@ func (d *Detector) Detect() (*Info, error) {
 	// 检测项目模式
 	mode := d.detectMode(root)
 	if mode == "" {
-		return nil, fmt.Errorf("cannot detect project mode: no main.go found and cmd/server directory doesn't exist")
+		return nil, fmt.Errorf("cannot detect project mode: no main.go found and cmd/<appName> or cmd/*/main.go don't exist")
 	}
 
 	return &Info{
@@ -57,7 +57,7 @@ func (d *Detector) Detect() (*Info, error) {
 // detectMode 检测项目模式
 func (d *Detector) detectMode(root string) string {
 	// Check for project mode:
-	// 1. legacy: cmd/server directory exists
+	// 1. legacy: cmd/<appName> directory exists
 	// 2. any cmd/*/main.go exists (common project layout)
 	cmdServerDir := filepath.Join(root, "cmd", "server")
 	if stat, err := os.Stat(cmdServerDir); err == nil && stat.IsDir() {

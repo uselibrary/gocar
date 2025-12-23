@@ -257,7 +257,7 @@ name = ""
 # 构建配置
 [build]
 # 构建入口路径 (相对于项目根目录)
-# simple 模式默认为 ".", project 模式默认为 "cmd/server"
+# simple 模式默认为 ".", project 模式默认为 "cmd/<appName>"（即项目名）
 entry = "."
 
 # 输出目录
@@ -325,7 +325,7 @@ test = "go test -v ./..."
 | `[project].mode` | 指定项目模式 (`simple` 或 `project`)，留空则自动检测 |
 | `[project].name` | 自定义项目名称，留空则使用目录名 |
 | `[project].version` | **项目版本号**，构建时自动通过 `-X main.version=<version>` 注入到程序中 |
-| `[build].entry` | **自定义构建入口路径**，如 `cmd/myapp` 替代默认的 `cmd/server` |
+| `[build].entry` | **自定义构建入口路径**，如 `cmd/myapp` 替代默认的 `cmd/<appName>`（即项目名） |
 | `[build].ldflags` | 额外的 ldflags，会追加到 profile 的 ldflags 之后 |
 | `[build].tags` | 构建标签列表 |
 | `[build].extra_env` | 额外的环境变量 |

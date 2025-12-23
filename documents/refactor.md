@@ -315,7 +315,7 @@ func (b *Builder) buildCommand(outputPath string) *exec.Cmd {
     
     // 添加源码路径
     if b.projectMode == "project" {
-        args = append(args, "./cmd/server")
+        args = append(args, "./cmd/<appName>")
     } else {
         args = append(args, ".")
     }

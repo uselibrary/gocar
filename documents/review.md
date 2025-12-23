@@ -3,7 +3,7 @@
 本文件列出基于当前代码与 README 的每个主要功能的手动/自动测试方法，以及应检查的潜在问题点（Bug 风险）。建议把这些步骤逐步写成自动化集成测试与单元测试。
 
 **新建项目（`gocar new`）**
-- **测试步骤**: 1) 在临时目录执行 `gocar new myapp`；2) `gocar new myapp --mode project`；3) 检查生成文件/目录是否存在（`go.mod`、`main.go` 或 `cmd/server/main.go`、`.gocar.toml`、`.gitignore`、`bin/`、`.git/`）。
+- **测试步骤**: 1) 在临时目录执行 `gocar new myapp`；2) `gocar new myapp --mode project`；3) 检查生成文件/目录是否存在（`go.mod`、`main.go` 或 `cmd/<appName>/main.go`、`.gocar.toml`、`.gitignore`、`bin/`、`.git/`）。
 - **预期结果**: 生成的目录结构与 README 描述一致，`go build` 在生成目录中成功通过（在 simple 模式对 `main.go` 执行 `go build`）。
 - **潜在问题**: 项目名校验不严导致非法目录名；当目标目录已存在时覆盖或失败未提示；模板占位符未正确替换；缺少 `git` 时行为不一致；文件权限/所有者设置错误。
 

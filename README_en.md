@@ -266,7 +266,7 @@ name = ""
 # Build configuration
 [build]
 # Build entry path (relative to project root)
-# simple mode defaults to ".", project mode defaults to "cmd/server"
+# simple mode defaults to ".", project mode defaults to "cmd/<appName>" (the project name)
 entry = "."
 
 # Output directory
@@ -333,7 +333,7 @@ test = "go test -v ./..."
 | `[project].mode` | Specify project mode (`simple` or `project`), auto-detected if empty |
 | `[project].name` | Custom project name, uses directory name if empty |
 | `[project].version` | **Project version**, auto-injected via `-X main.version=<version>` at build time |
-| `[build].entry` | **Custom build entry path**, e.g., `cmd/myapp` instead of default `cmd/server` |
+| `[build].entry` | **Custom build entry path**, e.g., `cmd/myapp` instead of default `cmd/<appName>` (the project name) |
 | `[build].ldflags` | Additional ldflags, appended to profile ldflags |
 | `[build].tags` | Build tags list |
 | `[build].extra_env` | Additional environment variables |

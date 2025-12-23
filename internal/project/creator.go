@@ -90,7 +90,7 @@ func (c *Creator) createProjectMode() error {
 	// Create directories
 	dirs := []string{
 		c.Name,
-		filepath.Join(c.Name, "cmd", "server"),
+		filepath.Join(c.Name, "cmd", c.Name),
 		filepath.Join(c.Name, "internal"),
 		filepath.Join(c.Name, "pkg"),
 		filepath.Join(c.Name, "test"),
@@ -108,8 +108,8 @@ func (c *Creator) createProjectMode() error {
 		return fmt.Errorf("failed to initialize go.mod: %w", err)
 	}
 
-	// Create cmd/server/main.go
-	if err := util.WriteFile(filepath.Join(c.Name, "cmd", "server", "main.go"), c.projectMainTemplate()); err != nil {
+	// Create cmd/<appName>/main.go
+	if err := util.WriteFile(filepath.Join(c.Name, "cmd", c.Name, "main.go"), c.projectMainTemplate()); err != nil {
 		return err
 	}
 
@@ -228,7 +228,7 @@ A Go project created with gocar (project mode).
 `+"```"+`
 %s/
 ├── cmd/
-│   └── server/
+│   └── %s/
 │       └── main.go      # Application entry point
 ├── internal/            # Private application code
 ├── pkg/                 # Public library code
@@ -283,7 +283,7 @@ Examples:
 - **internal/**: Private application and library code (not importable by other projects)
 - **pkg/**: Library code that can be used by external applications
 - **test/**: Integration tests, black-box tests
-`, c.Name, c.Name, c.Name, c.Name, c.Name, c.Name)
+`, c.Name, c.Name, c.Name, c.Name, c.Name, c.Name, c.Name)
 }
 
 // gitignoreTemplate 生成 .gitignore 内容

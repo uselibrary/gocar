@@ -108,7 +108,11 @@ func DefaultConfig() *GocarConfig {
 func DefaultConfigTemplate(projectName, projectMode string) string {
 	entry := "."
 	if projectMode == "project" {
-		entry = "cmd/server"
+		if projectName != "" {
+			entry = "cmd/" + projectName
+		} else {
+			entry = "cmd/server"
+		}
 	}
 
 	return fmt.Sprintf(`# gocar 项目配置文件
@@ -129,7 +133,7 @@ name = "%s"
 # 构建配置
 [build]
 # 构建入口路径 (相对于项目根目录)
-# simple 模式默认为 ".", project 模式默认为 "cmd/server"
+# simple 模式默认为 ".", project 模式默认为 "cmd/<appName>"（即项目名）
 entry = "%s"
 
 # 输出目录
@@ -330,6 +334,9 @@ func (c *GocarConfig) GetBuildEntry(defaultMode string) string {
 	}
 
 	if mode == "project" {
+		if c.Project.Name != "" {
+			return "cmd/" + c.Project.Name
+		}
 		return "cmd/server"
 	}
 	return "."

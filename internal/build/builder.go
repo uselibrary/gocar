@@ -146,7 +146,7 @@ func (b *Builder) buildCommand(outputPath string) *exec.Cmd {
 	if b.gocarConfig != nil {
 		entry = b.gocarConfig.GetBuildEntry(b.projectMode)
 	} else if b.projectMode == "project" {
-		entry = "./cmd/server"
+		entry = "./cmd/" + b.appName
 	} else {
 		entry = "."
 	}
