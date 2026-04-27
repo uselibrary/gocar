@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"gocar/internal/project"
@@ -14,9 +13,7 @@ type NewCommand struct{}
 // Run 执行 new 命令
 func (c *NewCommand) Run(args []string) error {
 	if len(args) < 1 {
-		fmt.Println("Error: Missing project name")
-		fmt.Println("Usage: gocar new <name> [--mode simple|project]")
-		os.Exit(1)
+		return fmt.Errorf("missing project name (usage: gocar new <name> [--mode simple|project])")
 	}
 
 	// Check for help
@@ -29,8 +26,7 @@ func (c *NewCommand) Run(args []string) error {
 
 	// Validate project name
 	if err := project.ValidateProjectName(appName); err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		return err
 	}
 
 	mode := "simple" // default mode
@@ -43,31 +39,25 @@ func (c *NewCommand) Run(args []string) error {
 				mode = args[i+1]
 				i++ // skip next arg
 			} else {
-				fmt.Println("Error: --mode requires a value")
-				os.Exit(1)
+				return fmt.Errorf("--mode requires a value")
 			}
 		default:
 			if strings.HasPrefix(args[i], "-") {
-				fmt.Printf("Error: Unknown option '%s'\n", args[i])
-				fmt.Println("Run 'gocar new --help' for usage.")
-				os.Exit(1)
+				return fmt.Errorf("unknown option '%s' (run 'gocar new --help' for usage)", args[i])
 			}
 		}
 	}
 
 	// 检查是否是有效模式
 	if mode != "simple" && mode != "project" {
-		fmt.Printf("Error: Unknown mode '%s'\n", mode)
-		fmt.Println("\nAvailable modes: simple, project")
-		os.Exit(1)
+		return fmt.Errorf("unknown mode '%s' (available: simple, project)", mode)
 	}
 
 	fmt.Printf("Creating new %s project: %s\n", mode, appName)
 
 	creator := project.NewCreator(appName, mode)
 	if err := creator.Create(); err != nil {
-		fmt.Printf("Error creating project: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("error creating project: %w", err)
 	}
 
 	fmt.Printf("\nSuccessfully created project '%s'\n", appName)

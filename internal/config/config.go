@@ -350,6 +350,46 @@ func (c *GocarConfig) GetRunEntry(defaultMode string) string {
 	return c.GetBuildEntry(defaultMode)
 }
 
+// GetBuildOutputRoot 获取构建输出根目录
+func (c *GocarConfig) GetBuildOutputRoot() string {
+	output := strings.TrimSpace(c.Build.Output)
+	if output == "" {
+		return "bin"
+	}
+	return filepath.Clean(output)
+}
+
+// ResolveBuildOutputDir 解析并校验构建输出目录（用于清理等破坏性操作）
+func (c *GocarConfig) ResolveBuildOutputDir(projectRoot string) (string, error) {
+	outputRoot := c.GetBuildOutputRoot()
+	if outputRoot == "." {
+		return "", fmt.Errorf("invalid [build].output: '.' is not allowed")
+	}
+
+	buildOutputDir := outputRoot
+	if !filepath.IsAbs(buildOutputDir) {
+		buildOutputDir = filepath.Join(projectRoot, buildOutputDir)
+	}
+
+	absOutputDir, err := filepath.Abs(buildOutputDir)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve build output directory: %w", err)
+	}
+	absProjectRoot, err := filepath.Abs(projectRoot)
+	if err != nil {
+		return "", fmt.Errorf("failed to resolve project root: %w", err)
+	}
+
+	if filepath.Dir(absOutputDir) == absOutputDir {
+		return "", fmt.Errorf("invalid [build].output: filesystem root is not allowed")
+	}
+	if absOutputDir == absProjectRoot {
+		return "", fmt.Errorf("invalid [build].output: project root is not allowed")
+	}
+
+	return absOutputDir, nil
+}
+
 // GetProjectMode 获取项目模式
 func (c *GocarConfig) GetProjectMode() string {
 	return c.Project.Mode
@@ -378,7 +418,11 @@ func (c *GocarConfig) RunCustomCommand(projectRoot, name string, extraArgs []str
 
 	// 如果有额外参数，追加到命令后面
 	if len(extraArgs) > 0 {
-		cmdStr = cmdStr + " " + strings.Join(extraArgs, " ")
+		quotedArgs := make([]string, 0, len(extraArgs))
+		for _, arg := range extraArgs {
+			quotedArgs = append(quotedArgs, shellQuoteArg(arg))
+		}
+		cmdStr = cmdStr + " " + strings.Join(quotedArgs, " ")
 	}
 
 	// 使用 shell 执行命令
@@ -389,6 +433,13 @@ func (c *GocarConfig) RunCustomCommand(projectRoot, name string, extraArgs []str
 	cmd.Stdin = os.Stdin
 
 	return cmd.Run()
+}
+
+func shellQuoteArg(arg string) string {
+	if arg == "" {
+		return "''"
+	}
+	return "'" + strings.ReplaceAll(arg, "'", "'\"'\"'") + "'"
 }
 
 // ListCommands 列出所有自定义命令

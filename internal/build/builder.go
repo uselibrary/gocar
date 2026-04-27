@@ -63,8 +63,13 @@ func (b *Builder) GetOutputPath() string {
 
 // GetRelativeOutputPath 获取相对输出路径
 func (b *Builder) GetRelativeOutputPath() string {
+	outputRoot := "bin"
+	if b.gocarConfig != nil {
+		outputRoot = b.gocarConfig.GetBuildOutputRoot()
+	}
+
 	targetDir := fmt.Sprintf("%s-%s", b.config.TargetOS, b.config.TargetArch)
-	outputDir := filepath.Join("bin", b.config.BuildMode(), targetDir)
+	outputDir := filepath.Join(outputRoot, b.config.BuildMode(), targetDir)
 	outputPath := filepath.Join(outputDir, b.appName)
 
 	if b.config.TargetOS == "windows" {

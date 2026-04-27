@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"gocar/internal/config"
 	"gocar/internal/project"
 )
 
@@ -15,21 +16,27 @@ type CleanCommand struct{}
 func (c *CleanCommand) Run(args []string) error {
 	projectRoot, appName, _, err := project.DetectProject()
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("%w", err)
 	}
 
-	binDir := filepath.Join(projectRoot, "bin")
+	cfg, err := config.Load(projectRoot)
+	if err != nil {
+		return fmt.Errorf("failed to load %s: %w", config.ConfigFileName, err)
+	}
 
-	// Remove bin directory contents
-	entries, err := os.ReadDir(binDir)
+	buildOutputDir, err := cfg.ResolveBuildOutputDir(projectRoot)
+	if err != nil {
+		return err
+	}
+
+	// Remove configured build output directory contents
+	entries, err := os.ReadDir(buildOutputDir)
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Println("Nothing to clean.")
 			return nil
 		}
-		fmt.Printf("Error reading bin directory: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("error reading build output directory: %w", err)
 	}
 
 	if len(entries) == 0 {
@@ -38,13 +45,13 @@ func (c *CleanCommand) Run(args []string) error {
 	}
 
 	for _, entry := range entries {
-		path := filepath.Join(binDir, entry.Name())
+		path := filepath.Join(buildOutputDir, entry.Name())
 		if err := os.RemoveAll(path); err != nil {
 			fmt.Printf("Error removing %s: %v\n", path, err)
 		}
 	}
 
-	fmt.Printf("Cleaned build artifacts for '%s'\n", appName)
+	fmt.Printf("Cleaned build artifacts for '%s' in %s\n", appName, buildOutputDir)
 	return nil
 }
 
@@ -56,6 +63,6 @@ USAGE:
     gocar clean
 
 DESCRIPTION:
-    Remove all build artifacts from the bin/ directory.
+	Remove all build artifacts from configured build output directory.
 `
 }

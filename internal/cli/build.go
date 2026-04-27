@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 
 	"gocar/internal/build"
 	"gocar/internal/config"
@@ -33,23 +32,17 @@ func (c *BuildCommand) Run(args []string) error {
 				target = args[i+1]
 				i++ // skip next arg
 			} else {
-				fmt.Println("Error: --target requires a value")
-				fmt.Println("Usage: gocar build --target <os>/<arch>")
-				fmt.Println("Example: gocar build --target linux/amd64")
-				os.Exit(1)
+				return fmt.Errorf("--target requires a value")
 			}
 		default:
-			fmt.Printf("Error: Unknown option '%s'\n", arg)
-			fmt.Println("Run 'gocar build --help' for usage.")
-			os.Exit(1)
+			return fmt.Errorf("unknown option '%s' (run 'gocar build --help' for usage)", arg)
 		}
 	}
 
 	// Get project info
 	projectRoot, appName, projectMode, err := project.DetectProject()
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("%w", err)
 	}
 
 	// Load config
@@ -69,10 +62,7 @@ func (c *BuildCommand) Run(args []string) error {
 	if target != "" {
 		targetOS, targetArch, err := build.ParseTarget(target)
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			fmt.Println("Expected format: <os>/<arch>")
-			fmt.Println("Example: linux/amd64, windows/amd64, darwin/arm64")
-			os.Exit(1)
+			return fmt.Errorf("%v; expected format: <os>/<arch> (example: linux/amd64)", err)
 		}
 		buildConfig.SetTarget(targetOS, targetArch)
 	}
@@ -85,8 +75,7 @@ func (c *BuildCommand) Run(args []string) error {
 
 	// Execute build
 	if err := builder.Build(); err != nil {
-		fmt.Printf("\n%v\n", err)
-		os.Exit(1)
+		return err
 	}
 
 	return nil

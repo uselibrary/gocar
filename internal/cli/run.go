@@ -18,8 +18,7 @@ func (c *RunCommand) Run(args []string) error {
 	// Get project info
 	projectRoot, appName, projectMode, err := project.DetectProject()
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("%w", err)
 	}
 
 	// Load config
@@ -60,12 +59,11 @@ func (c *RunCommand) Run(args []string) error {
 	cmd.Stdin = os.Stdin
 
 	if err := cmd.Run(); err != nil {
-		// Don't print error for normal exit
+		// Preserve subprocess exit code so main can exit consistently.
 		if exitErr, ok := err.(*exec.ExitError); ok {
-			os.Exit(exitErr.ExitCode())
+			return WithExitCode(fmt.Errorf("application exited with code %d", exitErr.ExitCode()), exitErr.ExitCode())
 		}
-		fmt.Printf("Run failed: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("run failed: %w", err)
 	}
 
 	return nil

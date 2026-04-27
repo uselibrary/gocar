@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 
 	"gocar/internal/config"
 	"gocar/internal/project"
@@ -24,9 +23,7 @@ func (c *InitCommand) Run(args []string) error {
 	// 检测项目
 	projectRoot, appName, projectMode, err := project.DetectProject()
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		fmt.Println("Please run this command in a Go project directory (where go.mod exists)")
-		os.Exit(1)
+		return fmt.Errorf("%v; please run this command in a Go project directory (where go.mod exists)", err)
 	}
 
 	// 检查配置文件是否已存在
@@ -38,8 +35,7 @@ func (c *InitCommand) Run(args []string) error {
 
 	// 创建配置文件
 	if err := config.Save(projectRoot, appName, projectMode); err != nil {
-		fmt.Printf("Error creating %s: %v\n", config.ConfigFileName, err)
-		os.Exit(1)
+		return fmt.Errorf("error creating %s: %w", config.ConfigFileName, err)
 	}
 
 	fmt.Printf("Created %s in %s\n", config.ConfigFileName, projectRoot)

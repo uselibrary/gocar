@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"gocar/internal/cli"
@@ -9,6 +10,7 @@ import (
 func main() {
 	app := cli.NewApp()
 	if err := app.Run(os.Args); err != nil {
-		os.Exit(1)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(cli.ExitCode(err))
 	}
 }

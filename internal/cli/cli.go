@@ -3,7 +3,6 @@ package cli
 import (
 	"errors"
 	"fmt"
-	"os"
 
 	"gocar/internal/config"
 	"gocar/internal/project"
@@ -81,8 +80,12 @@ func (a *App) Run(args []string) error {
 	cmd, ok := a.commands[cmdName]
 	if !ok {
 		// 尝试执行自定义命令
-		if err := a.tryRunCustomCommand(cmdName, args[2:]); err == nil {
+		err := a.tryRunCustomCommand(cmdName, args[2:])
+		if err == nil {
 			return nil
+		}
+		if !errors.Is(err, ErrCommandNotFound) {
+			return err
 		}
 		fmt.Printf("Unknown command: %s\n", cmdName)
 		printHelp()
@@ -117,7 +120,7 @@ func (a *App) tryRunCustomCommand(cmdName string, args []string) error {
 	// 加载配置
 	cfg, err := config.Load(projectRoot)
 	if err != nil {
-		return ErrCommandNotFound
+		return fmt.Errorf("failed to load %s: %w", config.ConfigFileName, err)
 	}
 
 	// 检查是否有这个自定义命令
@@ -128,8 +131,7 @@ func (a *App) tryRunCustomCommand(cmdName string, args []string) error {
 	// 执行自定义命令
 	fmt.Printf("Running custom command: %s\n\n", cmdName)
 	if err := cfg.RunCustomCommand(projectRoot, cmdName, args); err != nil {
-		fmt.Printf("Command failed: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("custom command '%s' failed: %w", cmdName, err)
 	}
 
 	return nil

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"os"
 
 	"gocar/internal/project"
 	"gocar/internal/util"
@@ -14,10 +13,7 @@ type AddCommand struct{}
 // Run 执行 add 命令
 func (c *AddCommand) Run(args []string) error {
 	if len(args) < 1 {
-		fmt.Println("Error: Missing package name")
-		fmt.Println("Usage: gocar add <package>...")
-		fmt.Println("Example: gocar add github.com/gin-gonic/gin")
-		os.Exit(1)
+		return fmt.Errorf("missing package name (usage: gocar add <package>...)")
 	}
 
 	// Check for help
@@ -29,8 +25,7 @@ func (c *AddCommand) Run(args []string) error {
 	// Check if we're in a Go module
 	projectRoot, appName, _, err := project.DetectProject()
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("%w", err)
 	}
 
 	fmt.Printf("Adding dependencies to '%s'...\n", appName)
@@ -39,8 +34,7 @@ func (c *AddCommand) Run(args []string) error {
 	for _, pkg := range args {
 		fmt.Printf("  Adding %s...\n", pkg)
 		if err := util.RunCommand(projectRoot, "go", "get", pkg); err != nil {
-			fmt.Printf("Error adding %s: %v\n", pkg, err)
-			os.Exit(1)
+			return fmt.Errorf("error adding %s: %w", pkg, err)
 		}
 	}
 
@@ -81,16 +75,14 @@ func (c *UpdateCommand) Run(args []string) error {
 	// Check if we're in a Go module
 	projectRoot, appName, _, err := project.DetectProject()
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("%w", err)
 	}
 
 	if len(args) == 0 {
 		// Update all dependencies
 		fmt.Printf("Updating all dependencies for '%s'...\n", appName)
 		if err := util.RunCommand(projectRoot, "go", "get", "-u", "./..."); err != nil {
-			fmt.Printf("Error updating dependencies: %v\n", err)
-			os.Exit(1)
+			return fmt.Errorf("error updating dependencies: %w", err)
 		}
 	} else {
 		// Update specific packages
@@ -98,8 +90,7 @@ func (c *UpdateCommand) Run(args []string) error {
 		for _, pkg := range args {
 			fmt.Printf("  Updating %s...\n", pkg)
 			if err := util.RunCommand(projectRoot, "go", "get", "-u", pkg); err != nil {
-				fmt.Printf("Error updating %s: %v\n", pkg, err)
-				os.Exit(1)
+				return fmt.Errorf("error updating %s: %w", pkg, err)
 			}
 		}
 	}
@@ -135,15 +126,13 @@ func (c *TidyCommand) Run(args []string) error {
 	// Check if we're in a Go module
 	projectRoot, appName, _, err := project.DetectProject()
 	if err != nil {
-		fmt.Printf("Error: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("%w", err)
 	}
 
 	fmt.Printf("Tidying go.mod for '%s'...\n", appName)
 
 	if err := util.RunCommand(projectRoot, "go", "mod", "tidy"); err != nil {
-		fmt.Printf("Error tidying go.mod: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("error tidying go.mod: %w", err)
 	}
 
 	fmt.Println("Successfully tidied go.mod")
